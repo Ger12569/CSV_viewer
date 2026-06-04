@@ -1,52 +1,123 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CSV/Excel Viewer</title>
+    <title>CSV / Excel Viewer</title>
 
     <style>
-        body { font-family: Arial; margin: 40px; background: #f5f5f5; }
-        .container { background: white; padding: 20px; border-radius: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background: #eee; }
-        .btn { padding: 10px 15px; background: #007bff; color: white; border: none; }
-        .error { color: red; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f4f4f4;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        form {
+            margin-bottom: 15px;
+        }
+
+        input {
+            padding: 6px;
+            margin-right: 5px;
+        }
+
+        button {
+            padding: 8px 12px;
+            border: none;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            table-layout: fixed;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            word-wrap: break-word;
+        }
+
+        th {
+            background: #f0f0f0;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+
+        img {
+            margin-top: 20px;
+            max-width: 100%;
+            border: 1px solid #ddd;
+        }
     </style>
 </head>
 
 <body>
+
 <div class="container">
 
     <h1>CSV / Excel Viewer</h1>
 
+    <!-- UPLOAD -->
     <form method="POST" enctype="multipart/form-data">
         <input type="file" name="file" required>
-        <button class="btn" type="submit">Upload</button>
+        <button name="upload" value="1">Upload</button>
     </form>
 
-    <hr>
-
-    <!-- 🔥 ФИЛЬТР -->
+    <!-- FILTER -->
     <form method="POST">
-        <label>Column:</label>
-        <input type="text" name="column" placeholder="e.g. age">
+        <input type="text" name="column" placeholder="Column (e.g. age)">
+        <input type="text" name="value" placeholder="Value (e.g. 20)">
+        <button name="filter" value="1">Filter</button>
+    </form>
 
-        <label>Greater than:</label>
-        <input type="text" name="value" placeholder="e.g. 20">
-
-        <button class="btn" type="submit">Filter</button>
+    <!-- PLOT -->
+    <form method="POST">
+        <button name="plot" value="1">Generate Plot</button>
     </form>
 
     {% if error %}
-        <p class="error">{{ error }}</p>
+        <div class="error">{{ error }}</div>
     {% endif %}
 
     {% if table %}
         <h2>Table</h2>
-        {{ table | safe }}
+        <div style="overflow-x:auto;">
+            {{ table | safe }}
+        </div>
+    {% endif %}
+
+    {% if table %}
+        <h2>Graph</h2>
+        <img src="/plot">
     {% endif %}
 
 </div>
+
 </body>
 </html>

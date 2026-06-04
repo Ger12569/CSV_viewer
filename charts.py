@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import os
 
 def create_histogram(df, column, output_path):
     plt.figure()
