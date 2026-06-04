@@ -10,47 +10,67 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 df_global = None
 
 
+def load_file(path):
+    if path.endswith(".csv"):
+        return pd.read_csv(path)
+    elif path.endswith(".xlsx"):
+        return pd.read_excel(path)
+    return None
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     global df_global
+
     table_html = None
     columns = []
-    if request.method == "POST":
-        file = request.files.get("file")
+    error = None
 
-        print("FILE OBJECT:", file)
+    # =========================
+    # 1. ЗАГРУЗКА ФАЙЛА
+    # =========================
+    if request.method == "POST" and "file" in request.files:
+        file = request.files["file"]
 
-        if file:
-            print("FILENAME:", file.filename)
-
+        if file.filename != "":
             path = os.path.join(UPLOAD_FOLDER, file.filename)
             file.save(path)
 
-            print("SAVED TO:", path)
+            df = load_file(path)
 
-            df_global = pd.read_csv(path)
+            if df is None:
+                error = "Unsupported format (use CSV or XLSX)"
+            else:
+                df_global = df
+                columns = df.columns.tolist()
+                table_html = df.to_html(classes="table table-striped", index=False)
 
-            table_html = df_global.to_html(index=False)
+    # =========================
+    # 2. ФИЛЬТР ДАННЫХ
+    # =========================
+    if request.method == "POST" and df_global is not None:
+        column = request.form.get("column")
+        value = request.form.get("value")
 
-    # if request.method == "POST":
-    #     file = request.files.get("file")
-    #
-    #     if file and file.filename.endswith(".csv"):
-    #         path = os.path.join(UPLOAD_FOLDER, file.filename)
-    #         file.save(path)
-    #
-    #         df_global = pd.read_csv(path)
-    #
-    #         columns = df_global.columns.tolist()
-    #         table_html = df_global.to_html(
-    #             classes="table table-striped",
-    #             index=False
-    #         )
+        if column and value and column in df_global.columns:
+            col_data = df_global[column]
 
+            try:
+                # если число
+                if pd.api.types.is_numeric_dtype(col_data):
+                    df_filtered = df_global[col_data > float(value)]
+                else:
+                    df_filtered = df_global[col_data.astype(str).str.contains(value)]
+
+                table_html = df_filtered.to_html(classes="table table-striped", index=False)
+
+            except:
+                error = "Filter error"
     return render_template(
         "index.html",
         table=table_html,
-        columns=columns
+        columns=columns,
+        error=error
     )
 
 
